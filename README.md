@@ -16,11 +16,12 @@ Aplikasi dashboard interaktif berbasis **Streamlit** yang dirancang untuk memban
 
 ---
 
-## 🛠️ Pustaka & Teknologi
+## 🛠️ Tech Stack
 
 * **Python:** 3.10+
 * **Framework UI:** [Streamlit](https://streamlit.io/)
 * **Visualisasi Data:** Plotly Express
 * **Pengolahan Data:** Pandas & NumPy
+*  **Database:** PostgreSQL
 
 ---
