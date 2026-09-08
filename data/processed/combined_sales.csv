@@ -1,4 +1,4 @@
-order_id,product_category,Status Pesanan,Alasan Pembatalan,Opsi Pengiriman,Waktu Pesanan Dibuat,Metode Pembayaran,Jumlah,Returned quantity,Total Diskon,Total Berat,Ongkos Kirim Dibayar oleh Pembeli,Estimasi Potongan Biaya Pengiriman,Total Pembayaran,Perkiraan Ongkos Kirim,Kota/Kabupaten,Provinsi,source_file
+order_id,product_category,status_pesanan,alasan_pembatalan,opsi_pengiriman,waktu_pesanan_dibuat,metode_pembayaran,jumlah,returned_quantity,total_diskon,total_berat,ongkos_kirim_dibayar_oleh_pembeli,estimasi_potongan_biaya_pengiriman,total_pembayaran,perkiraan_ongkos_kirim,kota_kabupaten,provinsi,source_file
 ORD_0000001,Celengan,Selesai,,Reguler (Cashless)-SPX Standard,2024-04-01 00:15,Saldo ShopeePay,1,0.0,0.0,1000 gr,0.0,10.0,38.300,10.0,KOTA SERANG,BANTEN,AprilSales2024_public.xlsx
 ORD_0000001,Celengan,Selesai,,Reguler (Cashless)-SPX Standard,2024-04-01 00:15,Saldo ShopeePay,1,0.0,0.0,1000 gr,0.0,10.0,38.300,10.0,KOTA SERANG,BANTEN,AprilSales2024_public.xlsx
 ORD_0000002,Celengan,Selesai,,Hemat Kargo-SPX Hemat,2024-04-01 01:47,COD (Bayar di Tempat),1,0.0,0.0,500 gr,0.0,14.5,18.576,14.5,KOTA SEMARANG,JAWA TENGAH,AprilSales2024_public.xlsx

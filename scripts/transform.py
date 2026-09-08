@@ -1,46 +1,51 @@
+import re
 import pandas as pd
 from pathlib import Path
 
 
-# ==================================
 # PATH CONFIGURATION
-# ==================================
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 RAW_DATA_PATH = BASE_DIR / "data" / "raw"
-
 PROCESSED_DATA_PATH = BASE_DIR / "data" / "processed"
 
 
-# ==================================
-# STANDARD SCHEMA
-# ==================================
+# HELPER: SNAKE_CASE CONVERTER
 
-STANDARD_COLUMNS = [
+def clean_to_snake_case(text: str) -> str:
+    """Mengubah string biasa/camelCase/Spasi menjadi snake_case."""
+    text = str(text).strip()
+    text = re.sub(r'[/\\-]', ' ', text)       # ganti / atau - dengan spasi
+    text = re.sub(r'[^\w\s]', '', text)       # hapus simbol unik
+    text = re.sub(r'\s+', '_', text)          # ganti spasi dengan _
+    return text.lower()
+
+
+# STANDARD SCHEMA (SNAKE_CASE)
+
+STANDARD_COLUMNS_SNAKE = [
     "order_id",
     "product_category",
-    "Status Pesanan",
-    "Alasan Pembatalan",
-    "Opsi Pengiriman",
-    "Waktu Pesanan Dibuat",
-    "Metode Pembayaran",
-    "Jumlah",
-    "Returned quantity",
-    "Total Diskon",
-    "Total Berat",
-    "Ongkos Kirim Dibayar oleh Pembeli",
-    "Estimasi Potongan Biaya Pengiriman",
-    "Total Pembayaran",
-    "Perkiraan Ongkos Kirim",
-    "Kota/Kabupaten",
-    "Provinsi"
+    "status_pesanan",
+    "alasan_pembatalan",
+    "opsi_pengiriman",
+    "waktu_pesanan_dibuat",
+    "metode_pembayaran",
+    "jumlah",
+    "returned_quantity",
+    "total_diskon",
+    "total_berat",
+    "ongkos_kirim_dibayar_oleh_pembeli",
+    "estimasi_potongan_biaya_pengiriman",
+    "total_pembayaran",
+    "perkiraan_ongkos_kirim",
+    "kota_kabupaten",
+    "provinsi"
 ]
 
 
 def transform_data():
 
-    # Cari semua file Excel
     files = sorted(RAW_DATA_PATH.glob("*.xlsx"))
 
     print("=" * 70)
@@ -57,76 +62,62 @@ def transform_data():
 
         df = pd.read_excel(file)
 
-        # ==================================
-        # STANDARDISASI NAMA KOLOM
-        # ==================================
 
-        # Beberapa file menggunakan
-        # Waktu Pengiriman Diatur
+        # STANDARISASI KOLOM INPUT KE SNAKE_CASE
+
+        # Ubah semua header kolom di file Excel asli ke snake_case dulu
+        df.columns = [clean_to_snake_case(col) for col in df.columns]
+
+        # Penanganan khusus jika nama kolom waktu di Excel berbeda
         if (
-            "Waktu Pengiriman Diatur" in df.columns
-            and "Waktu Pesanan Dibuat" not in df.columns
+            "waktu_pengiriman_diatur" in df.columns
+            and "waktu_pesanan_dibuat" not in df.columns
         ):
-
             df = df.rename(
                 columns={
-                    "Waktu Pengiriman Diatur":
-                    "Waktu Pesanan Dibuat"
+                    "waktu_pengiriman_diatur": "waktu_pesanan_dibuat"
                 }
             )
-
             print("✓ Kolom waktu distandarisasi")
 
-        # ==================================
-        # AMBIL KOLOM YANG DIPERLUKAN
-        # ==================================
+  
+        # AMBIL & NORMALSASI KOLOM
+
 
         missing_columns = [
             column
-            for column in STANDARD_COLUMNS
+            for column in STANDARD_COLUMNS_SNAKE
             if column not in df.columns
         ]
 
         if missing_columns:
-
-            print("⚠️ Kolom tidak ditemukan:")
+            print("⚠️ Kolom tidak ditemukan di file ini:")
             print(missing_columns)
 
-        # Ambil hanya kolom yang tersedia
         available_columns = [
             column
-            for column in STANDARD_COLUMNS
+            for column in STANDARD_COLUMNS_SNAKE
             if column in df.columns
         ]
 
         df = df[available_columns]
 
-        # ==================================
-        # TAMBAHKAN KOLOM YANG HILANG
-        # ==================================
-
-        for column in STANDARD_COLUMNS:
-
+        # Tambahkan kolom yang tidak ada di file Excel dengan isi NA
+        for column in STANDARD_COLUMNS_SNAKE:
             if column not in df.columns:
-
                 df[column] = pd.NA
 
-        # Pastikan urutan kolom sama
-        df = df[STANDARD_COLUMNS]
+        # Urutkan sesuai standar skema
+        df = df[STANDARD_COLUMNS_SNAKE]
 
-        # ==================================
-        # TAMBAHKAN SOURCE FILE
-        # ==================================
-
+        # Tambahkan kolom nama file sumber
         df["source_file"] = file.name
 
         all_dataframes.append(df)
 
         print(f"✓ Berhasil: {df.shape}")
 
-    # ==================================
     # GABUNGKAN SEMUA FILE
-    # ==================================
 
     combined_df = pd.concat(
         all_dataframes,
@@ -134,15 +125,13 @@ def transform_data():
     )
 
     print("\n" + "=" * 70)
-    print("SEMUA DATA BERHASIL DIGABUNGKAN")
+    print("SEMUA DATA BERHASIL DIGABUNGKAN (SNAKE_CASE)")
     print("=" * 70)
 
     print(f"Total baris: {combined_df.shape[0]}")
     print(f"Total kolom: {combined_df.shape[1]}")
 
-    # ==================================
     # SIMPAN HASIL
-    # ==================================
 
     PROCESSED_DATA_PATH.mkdir(
         parents=True,
@@ -169,6 +158,5 @@ if __name__ == "__main__":
 
     df = transform_data()
 
-    print("\nPREVIEW DATA:")
-
+    print("\nPREVIEW DATA (HEADER SNAKE_CASE):")
     print(df.head())
