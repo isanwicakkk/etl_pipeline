@@ -9,7 +9,7 @@ services:
 
   postgres:
     image: postgres:15
-    container_name: postgres_db
+    container_name: postgres_etl
     restart: always
     environment:
       POSTGRES_USER: myuser
