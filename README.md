@@ -3,9 +3,6 @@
 
 Aplikasi dashboard interaktif berbasis **Streamlit** yang dirancang untuk membantu *stakeholder* menganalisis performa bisnis, pencapaian target KPI, dan tren penjualan secara visual, responsif, dan real-time.
 
-![Dashboard Preview](https://raw.githubusercontent.com/streamlit/streamlit/develop/docs/static/img/streamlit-logo.png)
-*(Tips: Ganti URL gambar di atas dengan screenshot/GIF asli dashboard milikmu)*
-
 ---
 
 ## 🎯 Fitur Utama
