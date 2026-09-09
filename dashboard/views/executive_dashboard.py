@@ -78,7 +78,7 @@ def show_executive_dashboard(df):
     # ==========================================
     kpi = calculate_kpi(df)
 
-    col1, col2, col3, col4, col5 = st.columns(5)
+    col1, col2, col3, col4, col5 = st.columns([1.3, 0.9, 1.1, 0.9, 1.2])
     col1.metric("Total Revenue", format_rupiah(kpi["total_revenue"]))
     col2.metric("Total Pesanan", f'{kpi["total_orders"]:,}')
     col3.metric("Average Order Value", format_rupiah(kpi["aov"]))
