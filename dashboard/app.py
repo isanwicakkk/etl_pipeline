@@ -1,7 +1,7 @@
 import streamlit as st
 
 from utils.database import load_sales_data
-from pages.executive_dashboard import show_executive_dashboard
+from views.executive_dashboard import show_executive_dashboard
 
 
 # ==========================================
