@@ -162,8 +162,8 @@ def show_executive_dashboard(df):
 
         fig = px.line(
             monthly_sales,
-            x="bulan",
-            y="total_revenue",
+            x="Bulan",
+            y="Total Revenue",
             markers=True,
             hover_data=["total_orders"]
         )
@@ -207,8 +207,8 @@ def show_executive_dashboard(df):
 
     fig = px.bar(
         product_sales,
-        x="product_category",
-        y="total_revenue",
+        x="Kategori Produk",
+        y="Total Revenue",
         title="Revenue Berdasarkan Produk"
     )
 
@@ -247,8 +247,8 @@ def show_executive_dashboard(df):
 
     fig = px.bar(
         province_sales,
-        x="provinsi",
-        y="total_revenue",
+        x="Provinsi",
+        y="Total Revenue",
         title="Top 10 Provinsi"
     )
 

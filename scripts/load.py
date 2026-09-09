@@ -30,21 +30,24 @@ if not DATABASE_URL:
 
 
 # ==========================================
-# HELPER FUNCTION: SNAKE CASE CONVERTER
+# HELPER FUNCTION: CLEAN SNAKE CASE
 # ==========================================
 
 
-def to_snake_case(text: str) -> str:
-    """Mengubah string dari CamelCase, Title Case, Spasi, atau Simbol menjadi
+def to_snake_case(name: str) -> str:
+    """Ubah nama kolom menjadi snake_case (huruf kecil, dipisah underscore)."""
+    name = str(name).strip()
 
-    snake_case.
-    """
-    # Masukkan garis bawah sebelum huruf kapital (jika ada format CamelCase)
-    text = re.sub(r"(?<!^)(?=[A-Z])", "_", text)
-    # Ganti spasi, strip, atau karakter non-alphanumeric menjadi underscore
-    text = re.sub(r"[\s\-\W]+", "_", text)
-    # Hapus underscore di awal/akhir string dan ubah ke huruf kecil semua
-    return text.strip("_").lower()
+    # Pisahkan camelCase / PascalCase -> camel_Case
+    name = re.sub(r"(?<=[a-z0-9])(?=[A-Z])", "_", name)
+
+    # Ganti spasi, tanda baca, dan karakter selain huruf/angka menjadi underscore
+    name = re.sub(r"[^0-9a-zA-Z]+", "_", name)
+
+    # Hilangkan underscore ganda dan di awal/akhir
+    name = re.sub(r"_+", "_", name).strip("_")
+
+    return name.lower()
 
 
 # ==========================================
@@ -59,12 +62,11 @@ print("\nReading final_sales.csv...")
 
 df = pd.read_csv(INPUT_PATH)
 
-# Mengubah nama kolom menjadi snake_case
+# Bersihkan nama kolom DataFrame
 df.columns = [to_snake_case(col) for col in df.columns]
 
-print(f"Total rows: {len(df)}")
-print(f"Total columns: {len(df.columns)}")
-print(f"Columns (snake_case): {list(df.columns)}")
+print("✓ Nama kolom sudah dibersihkan menjadi snake_case")
+print(f"  Contoh kolom: {list(df.columns)[:5]}")
 
 
 # ==========================================
