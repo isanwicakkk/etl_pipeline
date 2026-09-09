@@ -125,6 +125,7 @@ def show_executive_dashboard(df):
             )
             .reset_index()
             .sort_values("total_revenue", ascending=False)
+            .head(10)
         )
 
         if not product_sales.empty:
