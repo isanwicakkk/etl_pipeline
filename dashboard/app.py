@@ -45,7 +45,7 @@ except Exception as e:
 # HEADER
 # ==========================================
 
-st.title("📊 E-Commerce Executive Dashboard")
+st.title("📊 Data Analytical E-Commerce Sales Dashboard")
 
 st.caption(
     "Monitoring Penjualan, Customer Analytics, dan Forecasting"
