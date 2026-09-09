@@ -82,11 +82,7 @@ def render_product_segmentation(product_df):
         st.warning("Tidak ada data untuk segment yang dipilih.")
         return
 
-    # =====================================
-# =====================================
     # REVENUE BY SEGMENT & CLUSTER VISUALIZATION (SIDE BY SIDE)
-    # =====================================
-
     col_seg1, col_seg2 = st.columns(2)
 
     with col_seg1:
@@ -146,10 +142,7 @@ def render_product_segmentation(product_df):
             use_container_width=True
         )
 
-    # =====================================
-   # =====================================
     # PRODUCT PERFORMANCE & RETURN RATE (SIDE BY SIDE)
-    # =====================================
 
     col_prod1, col_prod2 = st.columns(2)
 

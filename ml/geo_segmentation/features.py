@@ -2,9 +2,7 @@ import pandas as pd
 
 
 def load_geo_data(engine):
-    """
-    Mengambil data transaksi untuk Geo Segmentation.
-    """
+    """Mengambil data yang diperlukan untuk Geo Segmentation."""
 
     query = """
         SELECT
@@ -22,16 +20,11 @@ def load_geo_data(engine):
 
 
 def create_geo_features(df, level="provinsi"):
-    """
-    Membuat fitur geografis untuk clustering.
-
-    level:
-    - provinsi
-    - kota_kabupaten
-    """
+    """Membuat fitur geografis untuk clustering."""
 
     df = df.copy()
 
+    # Validasi kolom
     required_columns = [
         "order_id",
         "status_pesanan",
@@ -51,8 +44,16 @@ def create_geo_features(df, level="provinsi"):
             f"Kolom tidak ditemukan: {missing_columns}"
         )
 
-    # Bersihkan data
+    # Cleaning
     df[level] = df[level].fillna("Unknown")
+
+    df["status_pesanan"] = (
+        df["status_pesanan"]
+        .fillna("")
+        .astype(str)
+        .str.strip()
+        .str.lower()
+    )
 
     df["jumlah"] = pd.to_numeric(
         df["jumlah"],
@@ -64,86 +65,65 @@ def create_geo_features(df, level="provinsi"):
         errors="coerce"
     ).fillna(0)
 
-    # =====================================
-    # UNIQUE ORDER
-    # =====================================
-
-    # Menghindari double counting revenue/order
+    # Ambil satu record per order
     df_orders = df.drop_duplicates(
         subset=["order_id"]
     ).copy()
 
-    # =====================================
-    # SUCCESSFUL ORDERS
-    # =====================================
+    # Semua order per wilayah
+    geo_all = (
+        df_orders
+        .groupby(level)
+        .agg(
+            total_orders_all=("order_id", "nunique"),
+            cancelled_orders=(
+                "status_pesanan",
+                lambda x: (x == "batal").sum()
+            )
+        )
+        .reset_index()
+    )
 
+    # Order selesai
     df_success = df_orders[
-        df_orders["status_pesanan"] == "Selesai"
+        df_orders["status_pesanan"] == "selesai"
     ].copy()
 
-    # =====================================
-    # GEO FEATURES
-    # =====================================
-
-    geo_features = df.groupby(level).agg(
-        total_rows=("order_id", "count")
-    ).reset_index()
-
-    # Successful revenue
-    success_geo = df_success.groupby(level).agg(
-        total_revenue=("total_pembayaran", "sum"),
-        total_orders=("order_id", "nunique"),
-        total_quantity=("jumlah", "sum")
-    ).reset_index()
-
-    geo_features = geo_features.merge(
-        success_geo,
-        on=level,
-        how="left"
-    )
-
-    # =====================================
-    # CANCELLATION RATE
-    # =====================================
-
-    order_geo = df_orders.groupby(level).agg(
-        total_orders_all=("order_id", "nunique"),
-        cancelled_orders=(
-            "status_pesanan",
-            lambda x: (x == "Batal").sum()
+    # Metrics dari transaksi selesai
+    geo_success = (
+        df_success
+        .groupby(level)
+        .agg(
+            total_revenue=(
+                "total_pembayaran",
+                "sum"
+            ),
+            total_orders=(
+                "order_id",
+                "nunique"
+            ),
+            total_quantity=(
+                "jumlah",
+                "sum"
+            )
         )
-    ).reset_index()
+        .reset_index()
+    )
 
-    geo_features = geo_features.merge(
-        order_geo,
+    # Gabungkan
+    geo_features = geo_all.merge(
+        geo_success,
         on=level,
         how="left"
     )
 
-    geo_features["cancellation_rate"] = (
-        geo_features["cancelled_orders"]
-        / geo_features["total_orders_all"].replace(0, 1)
-        * 100
-    )
-
-    # =====================================
-    # AVERAGE ORDER VALUE
-    # =====================================
-
-    geo_features["average_order_value"] = (
-        geo_features["total_revenue"]
-        / geo_features["total_orders"].replace(0, 1)
-    )
-
-    # Bersihkan NaN
+    # Isi missing value
     numeric_columns = [
-        "total_revenue",
-        "total_orders",
-        "total_quantity",
-        "average_order_value",
         "total_orders_all",
         "cancelled_orders",
-        "cancellation_rate"
+        "total_revenue",
+        "total_orders",
+        "total_quantity"
     ]
 
     geo_features[numeric_columns] = (
@@ -151,13 +131,39 @@ def create_geo_features(df, level="provinsi"):
         .fillna(0)
     )
 
+    # Cancellation rate
+    geo_features["cancellation_rate"] = (
+        geo_features["cancelled_orders"]
+        / geo_features["total_orders_all"].replace(0, 1)
+        * 100
+    )
+
+    # Average Order Value
+    geo_features["average_order_value"] = (
+        geo_features["total_revenue"]
+        / geo_features["total_orders"].replace(0, 1)
+    )
+
+    geo_features["average_order_value"] = (
+        geo_features["average_order_value"]
+        .fillna(0)
+    )
+
+    # Sort
+    geo_features = (
+        geo_features
+        .sort_values(
+            by="total_revenue",
+            ascending=False
+        )
+        .reset_index(drop=True)
+    )
+
     return geo_features
 
 
 def get_geo_feature_columns():
-    """
-    Feature yang digunakan untuk K-Means.
-    """
+    """Mengembalikan fitur yang digunakan K-Means."""
 
     return [
         "total_revenue",
