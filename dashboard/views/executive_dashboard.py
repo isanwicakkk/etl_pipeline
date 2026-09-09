@@ -87,7 +87,7 @@ def show_executive_dashboard(df):
         "Lost Revenue",
         format_rupiah(lost_revenue),
         delta=f"-{len(df_cancelled)} Pesanan",
-        delta_color="inverse",
+        delta_color="red",
     )
 
     st.markdown("---")
