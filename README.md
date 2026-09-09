@@ -1,7 +1,5 @@
 # etl_pipeline
 
-<<<<<<< HEAD
-
 # Pipeline sederhana untuk membuat analisa raw data sales e-commerce dari kaggle
 
 # 📊 Executive KPI & Sales Analytics Dashboard
