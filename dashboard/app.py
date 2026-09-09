@@ -12,33 +12,74 @@ st.set_page_config(page_title="E-Commerce Sales Dashboard", layout="wide")
 # Load environment variables
 BASE_DIR = Path(__file__).resolve().parent.parent
 ENV_PATH = BASE_DIR / ".env"
-load_dotenv(dotenv_path=ENV_PATH)
 
-DB_USER = os.getenv("DB_USER")
-DB_PASSWORD = os.getenv("DB_PASSWORD")
-DB_HOST = os.getenv("DB_HOST")
-DB_PORT = os.getenv("DB_PORT")
-DB_NAME = os.getenv("DB_NAME")
+# =====================================
+# LOAD ENV
+# =====================================
 
-required_vars = {
-    "DB_USER": DB_USER,
-    "DB_PASSWORD": DB_PASSWORD,
-    "DB_HOST": DB_HOST,
-    "DB_PORT": DB_PORT,
-    "DB_NAME": DB_NAME
-}
+load_dotenv(ENV_PATH)
 
-missing_vars = [key for key, value in required_vars.items() if not value]
+# =====================================
+# DATABASE CONFIGURATION
+# =====================================
+
+def get_db_config():
+    try:
+        # Streamlit Cloud
+        return {
+            "DB_USER": st.secrets["DB_USER"],
+            "DB_PASSWORD": st.secrets["DB_PASSWORD"],
+            "DB_HOST": st.secrets["DB_HOST"],
+            "DB_PORT": st.secrets["DB_PORT"],
+            "DB_NAME": st.secrets["DB_NAME"]
+        }
+
+    except Exception:
+        # Local development
+        return {
+            "DB_USER": os.getenv("DB_USER"),
+            "DB_PASSWORD": os.getenv("DB_PASSWORD"),
+            "DB_HOST": os.getenv("DB_HOST"),
+            "DB_PORT": os.getenv("DB_PORT"),
+            "DB_NAME": os.getenv("DB_NAME")
+        }
+
+
+db_config = get_db_config()
+
+missing_vars = [
+    key
+    for key, value in db_config.items()
+    if not value
+]
 
 if missing_vars:
-    raise ValueError(f"Environment variable belum ditemukan: {missing_vars}")
+    st.error(
+        f"Database configuration belum lengkap: {', '.join(missing_vars)}"
+    )
+    st.stop()
+
+DB_USER = db_config["DB_USER"]
+DB_PASSWORD = db_config["DB_PASSWORD"]
+DB_HOST = db_config["DB_HOST"]
+DB_PORT = db_config["DB_PORT"]
+DB_NAME = db_config["DB_NAME"]
 
 DATABASE_URL = (
-    f"postgresql://{DB_USER}:{DB_PASSWORD}"
+    f"postgresql+psycopg2://"
+    f"{DB_USER}:{DB_PASSWORD}"
     f"@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 )
 
-engine = create_engine(DATABASE_URL)
+# =====================================
+# DATABASE CONNECTION
+# =====================================
+
+@st.cache_resource
+def get_engine():
+    return create_engine(DATABASE_URL)
+
+engine = get_engine()
 
 @st.cache_data(ttl=600)
 def load_data():
