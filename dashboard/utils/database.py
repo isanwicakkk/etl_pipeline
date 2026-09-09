@@ -64,11 +64,12 @@ def load_sales_data():
 
     query = """
         SELECT 
-            order_id,
+  order_id,
             product_category,
             status_pesanan,
             waktu_pesanan_dibuat,
             jumlah,
+            returned_quantity,
             total_pembayaran,
             kota_kabupaten,
             provinsi
