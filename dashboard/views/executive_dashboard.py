@@ -19,7 +19,7 @@ def show_executive_dashboard(df):
         return
 
     # ==========================================
-    # FILTER TANGGAL, STATUS, PROVINSI
+    # 1. FILTER TANGGAL (Diaplikasikan ke seluruh DF)
     # ==========================================
     min_date = df["waktu_pesanan_dibuat"].min().date()
     max_date = df["waktu_pesanan_dibuat"].max().date()
@@ -35,32 +35,42 @@ def show_executive_dashboard(df):
         start_date, end_date = date_range
         df = filter_by_date(df, start_date, end_date)
 
+    # Simpan copy data lengkap sebelum difilter status pesanan
+    df_raw_period = df.copy()
+
+    # ==========================================
+    # 2. FILTER STATUS & PROVINSI UNTUK REVENUE
+    # ==========================================
     status_options = sorted(df["status_pesanan"].dropna().unique())
     selected_status = st.sidebar.multiselect(
         "Status Pesanan", options=status_options, default=status_options
     )
-    df = df[df["status_pesanan"].isin(selected_status)]
+    df_filtered = df[df["status_pesanan"].isin(selected_status)]
 
-    province_options = sorted(df["provinsi"].dropna().unique())
+    province_options = sorted(df_filtered["provinsi"].dropna().unique())
     selected_province = st.sidebar.multiselect(
         "Provinsi", options=province_options, default=province_options
     )
-    df = df[df["provinsi"].isin(selected_province)]
+    df_filtered = df_filtered[df_filtered["provinsi"].isin(selected_province)]
 
     # PREPARE DATA
-    df_unique = get_unique_orders(df)
+    df_unique = get_unique_orders(df_filtered)
     df_success = get_success_orders(df_unique)
 
     # ==========================================
-    # 1. ENHANCED KPI METRICS (DENGAN LOST REVENUE)
+    # 3. HITUNG LOST REVENUE DARI DATA RAW PERIODE
     # ==========================================
-    kpi = calculate_kpi(df)
+    df_raw_unique = get_unique_orders(df_raw_period)
 
-    # Hitung Lost Revenue akibat pembatalan
-    df_cancelled = df_unique[
-        df_unique["status_pesanan"].astype(str).str.contains("Batal|Cancel", case=False, na=False)
-    ]
+    # Deteksi status pembatalan secara fleksibel (case-insensitive)
+    cancellation_mask = df_raw_unique["status_pesanan"].astype(str).str.contains(
+        "batal|cancel", case=False, na=False
+    )
+    df_cancelled = df_raw_unique[cancellation_mask]
     lost_revenue = df_cancelled["total_pembayaran"].sum()
+
+    # KPI METRICS
+    kpi = calculate_kpi(df_filtered)
 
     col1, col2, col3, col4, col5 = st.columns(5)
     col1.metric("Total Revenue", format_rupiah(kpi["total_revenue"]))
@@ -77,7 +87,7 @@ def show_executive_dashboard(df):
     st.markdown("---")
 
     # ==========================================
-    # 2. TREN REVENUE & MOM GROWTH
+    # 4. TREN REVENUE BULANAN
     # ==========================================
     st.subheader("1. Tren Pendapatan & Pertumbuhan Bulanan")
 
@@ -96,7 +106,6 @@ def show_executive_dashboard(df):
         )
 
         if not monthly_sales.empty:
-            # Hitung Growth MoM (%)
             monthly_sales["mom_growth"] = (
                 monthly_sales["total_revenue"].pct_change() * 100
             )
@@ -119,7 +128,7 @@ def show_executive_dashboard(df):
             st.plotly_chart(fig_line, use_container_width=True)
 
     # ==========================================
-    # 3. ANALISIS LOSS: ALASAN PEMBATALAN PESANAN
+    # 5. ANALISIS PEMBATALAN & RETURN
     # ==========================================
     st.subheader("2. Analisis Potensi Kerugian & Pembatalan")
 
@@ -127,8 +136,14 @@ def show_executive_dashboard(df):
 
     with col_cancel1:
         if not df_cancelled.empty and "alasan_pembatalan" in df_cancelled.columns:
+            # Fillna agar alasan kosong tetap terhitung sebagai 'Tidak Diisi'
+            df_cancelled_clean = df_cancelled.copy()
+            df_cancelled_clean["alasan_pembatalan"] = df_cancelled_clean[
+                "alasan_pembatalan"
+            ].fillna("Tidak Diberitahu")
+
             cancel_reasons = (
-                df_cancelled.groupby("alasan_pembatalan")
+                df_cancelled_clean.groupby("alasan_pembatalan")
                 .agg(
                     total_lost=("total_pembayaran", "sum"),
                     total_cases=("order_id", "nunique"),
@@ -153,18 +168,26 @@ def show_executive_dashboard(df):
             )
             fig_cancel.update_layout(yaxis={"categoryorder": "total ascending"})
             st.plotly_chart(fig_cancel, use_container_width=True)
+        else:
+            st.info("Tidak ada data pembatalan pesanan pada periode ini.")
 
     with col_cancel2:
-        # Return Rate per Kategori Produk
-        if not df.empty and "returned_quantity" in df.columns:
+        if not df_raw_period.empty and "returned_quantity" in df_raw_period.columns:
+            df_ret_clean = df_raw_period.copy()
+            df_ret_clean["returned_quantity"] = df_ret_clean["returned_quantity"].fillna(0)
+            df_ret_clean["jumlah"] = df_ret_clean["jumlah"].fillna(0)
+
             df_returns = (
-                df.groupby("product_category")
+                df_ret_clean.groupby("product_category")
                 .agg(
                     total_sold=("jumlah", "sum"),
                     total_returned=("returned_quantity", "sum"),
                 )
                 .reset_index()
             )
+
+            # Hindari pembagian dengan nol
+            df_returns = df_returns[df_returns["total_sold"] > 0]
             df_returns["return_rate"] = (
                 df_returns["total_returned"] / df_returns["total_sold"]
             ) * 100
@@ -172,32 +195,43 @@ def show_executive_dashboard(df):
                 "return_rate", ascending=False
             ).head(7)
 
-            fig_return = px.bar(
-                df_returns,
-                x="product_category",
-                y="return_rate",
-                title="Top Kategori dengan Return Rate Tergi ( % )",
-                text="return_rate",
-                labels={
-                    "product_category": "Kategori",
-                    "return_rate": "Return Rate (%)",
-                },
-                color="return_rate",
-                color_continuous_scale="Oranges",
-            )
-            fig_return.update_traces(
-                texttemplate="%{text:.2f}%", textposition="outside"
-            )
-            st.plotly_chart(fig_return, use_container_width=True)
+            if not df_returns.empty and df_returns["total_returned"].sum() > 0:
+                fig_return = px.bar(
+                    df_returns,
+                    x="product_category",
+                    y="return_rate",
+                    title="Top Kategori dengan Return Rate Tergi ( % )",
+                    text="return_rate",
+                    labels={
+                        "product_category": "Kategori",
+                        "return_rate": "Return Rate (%)",
+                    },
+                    color="return_rate",
+                    color_continuous_scale="Oranges",
+                )
+                fig_return.update_traces(
+                    texttemplate="%{text:.2f}%", textposition="outside"
+                )
+                st.plotly_chart(fig_return, use_container_width=True)
+            else:
+                st.info("Tidak ada data pengembalian barang (return) pada periode ini.")
 
     # ==========================================
-    # 4. ANALISIS BEBAN LOGISTIK & SUBSIDI ONGKIR
+    # 6. ANALISIS SUBSIDI ONGKIR
     # ==========================================
     st.subheader("3. Analisis Beban Logistik & Subsidized Shipping")
 
     if not df_success.empty and "estimasi_potongan_biaya_pengiriman" in df_success.columns:
+        df_ship_clean = df_success.copy()
+        df_ship_clean["ongkos_kirim_dibayar_oleh_pembeli"] = df_ship_clean[
+            "ongkos_kirim_dibayar_oleh_pembeli"
+        ].fillna(0)
+        df_ship_clean["estimasi_potongan_biaya_pengiriman"] = df_ship_clean[
+            "estimasi_potongan_biaya_pengiriman"
+        ].fillna(0)
+
         shipping_summary = (
-            df_success.groupby("opsi_pengiriman")
+            df_ship_clean.groupby("opsi_pengiriman")
             .agg(
                 ongkir_pembeli=("ongkos_kirim_dibayar_oleh_pembeli", "sum"),
                 subsidi_ongkir=("estimasi_potongan_biaya_pengiriman", "sum"),
@@ -207,32 +241,35 @@ def show_executive_dashboard(df):
             .sort_values("total_orders", ascending=False)
         )
 
-        fig_ship = go.Figure(
-            data=[
-                go.Bar(
-                    name="Ongkir Dibayar Pembeli",
-                    x=shipping_summary["opsi_pengiriman"],
-                    y=shipping_summary["ongkir_pembeli"],
-                    marker_color="#2CA02C",
-                ),
-                go.Bar(
-                    name="Subsidi/Potongan Ongkir",
-                    x=shipping_summary["opsi_pengiriman"],
-                    y=shipping_summary["subsidi_ongkir"],
-                    marker_color="#D62728",
-                ),
-            ]
-        )
-        fig_ship.update_layout(
-            barmode="group",
-            title="Perbandingan Ongkir Pembeli vs Subsidi Toko per Kurir",
-            xaxis_title="Opsi Pengiriman",
-            yaxis_title="Total Nilai (Rp)",
-        )
-        st.plotly_chart(fig_ship, use_container_width=True)
+        if not shipping_summary.empty:
+            fig_ship = go.Figure(
+                data=[
+                    go.Bar(
+                        name="Ongkir Dibayar Pembeli",
+                        x=shipping_summary["opsi_pengiriman"],
+                        y=shipping_summary["ongkir_pembeli"],
+                        marker_color="#2CA02C",
+                    ),
+                    go.Bar(
+                        name="Subsidi/Potongan Ongkir",
+                        x=shipping_summary["opsi_pengiriman"],
+                        y=shipping_summary["subsidi_ongkir"],
+                        marker_color="#D62728",
+                    ),
+                ]
+            )
+            fig_ship.update_layout(
+                barmode="group",
+                title="Perbandingan Ongkir Pembeli vs Subsidi Toko per Kurir",
+                xaxis_title="Opsi Pengiriman",
+                yaxis_title="Total Nilai (Rp)",
+            )
+            st.plotly_chart(fig_ship, use_container_width=True)
+        else:
+            st.info("Data pengiriman tidak tersedia.")
 
     # ==========================================
-    # 5. EXECUTIVE SUMMARY & STRATEGIC RECOMMENDATIONS
+    # 7. EXECUTIVE SUMMARY
     # ==========================================
     st.subheader("4. Executive Summary & Action Plan")
 
