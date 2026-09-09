@@ -37,7 +37,7 @@ def build_database_url() -> str:
     user = get_secret_or_env("DB_USER")
     password = get_secret_or_env("DB_PASSWORD")
     host = get_secret_or_env("DB_HOST")
-    port = get_secret_or_env("DB_PORT") or "5432"
+    port = get_secret_or_env("DB_PORT")
     dbname = get_secret_or_env("DB_NAME") or "postgres"
 
     if user and password and host:
