@@ -28,5 +28,3 @@ Aplikasi dashboard interaktif berbasis **Streamlit** yang dirancang untuk memban
 - **Database:** PostgreSQL
 
 ---
-
-> > > > > > > c689e1f4f531edba5c68c1c22092470fe19c5b51
