@@ -7,7 +7,7 @@ def format_rupiah(value):
 
 
 def render_geo_segmentation(df):
-    st.header("🗺️ Geo Segmentation")
+    st.header("Geo Segmentation")
     st.caption(
         "Segmentasi wilayah berdasarkan revenue, jumlah pesanan, kuantitas, "
         "Average Order Value (AOV), dan tingkat pembatalan."
@@ -46,7 +46,7 @@ def render_geo_segmentation(df):
     # FILTER
     # ==========================================
 
-    st.subheader("🔎 Filter Analisis")
+    st.subheader("Filter Analisis")
 
     available_segments = sorted(df["segment"].dropna().unique())
 
@@ -86,22 +86,22 @@ def render_geo_segmentation(df):
     col1, col2, col3, col4 = st.columns(4)
 
     col1.metric(
-        "🗺️ Total Provinsi",
+        "Total Provinsi",
         f"{total_regions:,}"
     )
 
     col2.metric(
-        "📊 Total Revenue",
+        "Total Revenue",
         format_rupiah(total_revenue)
     )
 
     col3.metric(
-        "🏆 Top Province",
+        "Top Province",
         top_region["provinsi"]
     )
 
     col4.metric(
-        "⚠️ Avg Cancellation",
+        "Avg Cancellation",
         f"{avg_cancellation:.2f}%"
     )
 
@@ -111,7 +111,7 @@ def render_geo_segmentation(df):
     # BUSINESS INSIGHT
     # ==========================================
 
-    st.subheader("💡 Geo Performance Insight")
+    st.subheader("Geo Performance Insight")
 
     top_revenue_region = (
         filtered_df
@@ -134,19 +134,19 @@ def render_geo_segmentation(df):
     insight_col1, insight_col2, insight_col3 = st.columns(3)
 
     insight_col1.info(
-        f"🏆 **Market Terbesar**\n\n"
+        f"**Market Terbesar**\n\n"
         f"{top_revenue_region['provinsi']}\n\n"
         f"Revenue: {format_rupiah(top_revenue_region['total_revenue'])}"
     )
 
     insight_col2.success(
-        f"💰 **AOV Tertinggi**\n\n"
+        f"**AOV Tertinggi**\n\n"
         f"{best_aov_region['provinsi']}\n\n"
         f"AOV: {format_rupiah(best_aov_region['average_order_value'])}"
     )
 
     insight_col3.warning(
-        f"⚠️ **Cancellation Tertinggi**\n\n"
+        f"**Cancellation Tertinggi**\n\n"
         f"{highest_cancel_region['provinsi']}\n\n"
         f"Rate: {highest_cancel_region['cancellation_rate']:.2f}%"
     )
@@ -160,7 +160,7 @@ def render_geo_segmentation(df):
     col1, col2 = st.columns(2)
 
     with col1:
-        st.subheader("📊 Distribusi Segment Wilayah")
+        st.subheader("Distribusi Segment Wilayah")
 
         segment_distribution = (
             filtered_df["segment"]
@@ -201,7 +201,7 @@ def render_geo_segmentation(df):
         )
 
     with col2:
-        st.subheader("💰 Top Revenue per Provinsi")
+        st.subheader("Top Revenue per Provinsi")
 
         top_revenue = (
             filtered_df
@@ -242,7 +242,7 @@ def render_geo_segmentation(df):
     col1, col2 = st.columns([1.2, 1])
 
     with col1:
-        st.subheader("🔵 Visualisasi Cluster Wilayah")
+        st.subheader("Visualisasi Cluster Wilayah")
 
         fig_cluster = px.scatter(
             filtered_df,
@@ -275,7 +275,7 @@ def render_geo_segmentation(df):
         )
 
     with col2:
-        st.subheader("📋 Rangkuman Performa Segment")
+        st.subheader("Rangkuman Performa Segment")
 
         segment_summary = (
             filtered_df
@@ -324,7 +324,7 @@ def render_geo_segmentation(df):
     col1, col2 = st.columns(2)
 
     with col1:
-        st.subheader("📈 AOV vs Cancellation Rate")
+        st.subheader("AOV vs Cancellation Rate")
 
         fig_performance = px.scatter(
             filtered_df,
@@ -354,7 +354,7 @@ def render_geo_segmentation(df):
         )
 
     with col2:
-        st.subheader("⚠️ Top Cancellation Rate")
+        st.subheader("Top Cancellation Rate")
 
         top_cancel = (
             filtered_df
@@ -398,7 +398,7 @@ def render_geo_segmentation(df):
     # DETAIL TABLE
     # ==========================================
 
-    st.subheader("📋 Detail Geo Segmentation")
+    st.subheader("Detail Geo Segmentation")
 
     display_columns = [
         "provinsi",
