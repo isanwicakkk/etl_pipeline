@@ -37,7 +37,7 @@ st.set_page_config(
 st.markdown("""
     <style>
         .block-container {
-            padding-top: 0rem !important;
+            padding-top: 0.5rem !important;
             padding-bottom: 0rem !important;
         }
     </style>
