@@ -20,8 +20,10 @@ from utils.database import load_sales_data
 from views.executive_dashboard import show_executive_dashboard
 from ml.product_segmentation.predict import predict_product_segments
 from ml.geo_segmentation.predict import predict_geo_segments
+
 from views.product_segmentation import render_product_segmentation
 from views.geo_segmentation import render_geo_segmentation
+from views.sales_forecasting import render_sales_forecasting
 
 # ==========================================
 # PAGE CONFIG
@@ -126,9 +128,5 @@ with tab2:
 # ==========================================
 
 with tab3:
-    st.header("Sales Forecasting")
-
-    st.info(
-        "Modul Forecasting akan diimplementasikan "
-        "menggunakan Time Series Analysis."
-    )
+    render_sales_forecasting()
+    
