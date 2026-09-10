@@ -29,9 +29,17 @@ from views.geo_segmentation import render_geo_segmentation
 
 st.set_page_config(
     page_title="E-Commerce Sales Dashboard",
-    page_icon="📊",
     layout="wide"
 )
+
+st.markdown("""
+    <style>
+        .block-container {
+            padding-top: 1rem !important;
+            padding-bottom: 0rem !important;
+        }
+    </style>
+""", unsafe_allow_html=True)
 
 # ==========================================
 # SIDEBAR
@@ -74,10 +82,10 @@ except Exception as e:
 # HEADER
 # ==========================================
 
-st.title("📊 Data Analytical E-Commerce Sales Dashboard")
+st.title("E-Commerce Performance Dashboard")
 
 st.caption(
-    "Monitoring Penjualan, Market Segmentation, Customer Analytics, dan Forecasting"
+    "Track sales performace, identify market segments, and forecasting future demand."
 )
 
 # ==========================================
@@ -85,9 +93,9 @@ st.caption(
 # ==========================================
 
 tab1, tab2, tab3 = st.tabs([
-    "📈 Executive Dashboard",
-    "🎯 Market Segmentation",
-    "🔮 Sales Forecasting"
+    "Executive Dashboard",
+    "Market Segmentation",
+    "Sales Forecasting"
 ])
 
 # ==========================================
@@ -103,8 +111,8 @@ with tab1:
 
 with tab2:
     subtab1, subtab2 = st.tabs([
-        "📦 Product Segmentation",
-        "🗺️ Geo Segmentation"
+        "Product Segmentation",
+        "Geo Segmentation"
     ])
 
     with subtab1:
@@ -118,7 +126,7 @@ with tab2:
 # ==========================================
 
 with tab3:
-    st.header("🔮 Sales Forecasting")
+    st.header("Sales Forecasting")
 
     st.info(
         "Modul Forecasting akan diimplementasikan "
