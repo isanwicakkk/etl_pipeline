@@ -19,6 +19,7 @@ import streamlit as st
 from utils.database import load_sales_data
 from views.executive_dashboard import show_executive_dashboard
 from ml.product_segmentation.predict import predict_product_segments
+from ml.geo_segmentation.predict import predict_geo_segments
 from views.product_segmentation import render_product_segmentation
 from views.geo_segmentation import render_geo_segmentation
 
@@ -59,6 +60,13 @@ except Exception as e:
 
 try:
     product_segments = predict_product_segments(df)
+
+except Exception as e:
+    st.error(f"Gagal menjalankan Product Segmentation: {e}")
+    st.stop()
+
+try:
+    geo_segments = predict_geo_segments(df)
 
 except Exception as e:
     st.error(f"Gagal menjalankan Product Segmentation: {e}")
@@ -105,7 +113,7 @@ with tab2:
         render_product_segmentation(product_segments)
 
     with subtab2:
-        render_geo_segmentation()
+        render_geo_segmentation(geo_segments)
 
 # ==========================================
 # TAB 3 - SALES FORECASTING
