@@ -105,7 +105,7 @@ with tab2:
         render_product_segmentation(product_segments)
 
     with subtab2:
-        render_geo_segmentation(df)
+        render_geo_segmentation()
 
 # ==========================================
 # TAB 3 - SALES FORECASTING

@@ -4,7 +4,7 @@ import plotly.express as px
 from pathlib import Path
 
 
-def render_geo_segmentation(df):
+def render_geo_segmentation():
 
     st.header("Geo Segmentation")
 
