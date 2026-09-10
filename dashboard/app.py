@@ -54,9 +54,7 @@ except Exception as e:
     st.error(f"Gagal terhubung ke database: {e}")
     st.stop()
 
-# ==========================================
-# PRODUCT SEGMENTATION
-# ==========================================
+# PRODUCT AND GEO FUNCTION
 
 try:
     product_segments = predict_product_segments(df)
