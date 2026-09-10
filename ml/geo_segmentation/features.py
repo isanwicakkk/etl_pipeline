@@ -163,8 +163,6 @@ def create_geo_features(df, level="provinsi"):
 
 
 def get_geo_feature_columns():
-    """Mengembalikan fitur yang digunakan K-Means."""
-
     return [
         "total_revenue",
         "total_orders",
